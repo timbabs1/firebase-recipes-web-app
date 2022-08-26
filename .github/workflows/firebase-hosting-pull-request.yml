@@ -7,6 +7,14 @@ jobs:
   build_and_preview:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
     runs-on: ubuntu-latest
+    env:
+      REACT_APP_API_KEY: "${{ secrets.REACT_APP_API_KEY }}"
+      REACT_APP_AUTH_DOMAIN: "${{ secrets.REACT_APP_AUTH_DOMAIN }}"
+      REACT_APP_PROJECT_ID: "${{ secrets.REACT_APP_PROJECT_ID }}"
+      REACT_APP_STORAGE_BUCKET: "${{ secrets.REACT_APP_STORAGE_BUCKET }}"
+      REACT_APP_MESSAGING_SENDER_ID: "${{ secrets.REACT_APP_MESSAGING_SENDER_ID }}"
+      REACT_APP_APP_ID: "${{ secrets.REACT_APP_APP_ID }}"
+      REACT_APP_MEASUREMENT_ID: "${{ secrets.REACT_APP_MEASUREMENT_ID }}"
     steps:
       - uses: actions/checkout@v2
       - run: npm install
@@ -16,3 +24,22 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FIR_RECIPES_46C50 }}'
           projectId: fir-recipes-46c50
+  functions_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v2
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: 📥 Download deps
+        working-directory: functions
+        run: yarn install
+
+      - name: 🚀 Deploy
+        run: npx firebase-tools deploy --token "$FIREBASE_TOKEN" --only functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
